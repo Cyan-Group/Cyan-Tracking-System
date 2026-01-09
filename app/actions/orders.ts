@@ -87,3 +87,55 @@ export async function updateOrderStatusAction(orderId: string, newStatus: string
     revalidatePath(`/track/${orderId}`);
     return { success: true };
 }
+
+export async function deleteOrderAction(orderId: string) {
+    const cookieStore = cookies();
+
+    // Auth Check
+    const supabaseAuth = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) { return cookieStore.get(name)?.value },
+                set(name: string, value: string, options: any) { },
+                remove(name: string, options: any) { },
+            },
+        }
+    );
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+
+    if (!user) {
+        return { error: 'Unauthorized' };
+    }
+
+    // Role check - We need to be sure. 
+    // We can use the service client to check the profile role
+    const supabaseService = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: profile } = await supabaseService
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || (profile.role !== 'developer' && profile.role !== 'manager')) {
+        return { error: 'Forbidden: Insufficient permissions' };
+    }
+
+    const { error } = await supabaseService
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+    if (error) {
+        console.error('Delete Order Error:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true };
+}

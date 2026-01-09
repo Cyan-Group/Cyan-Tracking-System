@@ -1,6 +1,7 @@
 'use client';
 
 import { OrderStatusSelect } from './order-status-select';
+import { DeleteOrderDialog } from './delete-order-dialog';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, ExternalLink, MoreHorizontal, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -17,7 +18,7 @@ const formatDate = (dateString: string) => {
     });
 };
 
-export function OrdersTable({ orders: initialOrders }: { orders: any[] }) {
+export function OrdersTable({ orders: initialOrders, userRole }: { orders: any[], userRole?: string }) {
     const [orders, setOrders] = useState<any[]>(initialOrders);
     const supabase = createClient();
 
@@ -94,6 +95,9 @@ export function OrdersTable({ orders: initialOrders }: { orders: any[] }) {
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
+                                            {(userRole === 'manager' || userRole === 'developer') && (
+                                                <DeleteOrderDialog orderId={order.id} />
+                                            )}
                                             <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" asChild title="إرسال واتساب">
                                                 <a href={waLink} target="_blank" rel="noopener noreferrer">
                                                     <MessageCircle className="w-4 h-4" />
