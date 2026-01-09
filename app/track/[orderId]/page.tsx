@@ -5,11 +5,10 @@ import { Package, Clock, Phone, User, Calendar } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 // Mock Card since we can't install shadcn/ui cli yet
-function DetailCard({ title, value, icon, className, delay = 0 }: { title: string, value: string, icon: any, className?: string, delay?: number }) {
+function DetailCard({ title, value, icon, className }: { title: string, value: string, icon: any, className?: string }) {
     return (
         <div
             className={`group bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex items-start gap-5 ${className}`}
-            style={{ animationDelay: `${delay}ms` }}
         >
             <div className="p-3 bg-slate-100 rounded-lg text-slate-700">
                 {icon}
