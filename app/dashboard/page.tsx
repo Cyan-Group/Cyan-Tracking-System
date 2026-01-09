@@ -1,0 +1,78 @@
+import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
+import { OrdersTable } from '@/components/orders/orders-table';
+import { NewOrderDialog } from '@/components/orders/new-order-dialog';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+
+export default async function DashboardPage({
+    searchParams,
+}: {
+    searchParams?: { query?: string };
+}) {
+    const query = searchParams?.query || '';
+
+    // Use direct Supabase Client with Service Key to ensure ADMIN access (Bypass RLS)
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } }
+    );
+
+    // Basic query
+    let dbQuery = supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    // If search exists
+    if (query) {
+        dbQuery = dbQuery.or(`customer_name.ilike.%${query}%,phone_number.ilike.%${query}%,id.eq.${query}`);
+    }
+
+    const { data: orders, error } = await dbQuery;
+
+    if (error) {
+        console.error('Dashboard Fetch Error:', error);
+    } else {
+        console.log('Dashboard Orders Fetched:', orders?.length);
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">الطلبات</h1>
+                    <p className="text-muted-foreground">إدارة ومتابعة طلبات الطباعة</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <NewOrderDialog />
+                </div>
+            </div>
+
+            <div className="flex items-center gap-2 max-w-sm">
+                <div className="relative w-full">
+                    <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+
+                    {/* 
+                We would normally use a Client Component for search input that pushes to URL router.
+                For now, I'll put a simple placeholder explaining this or just a standard input 
+                that doesn't actually filter without client-side logic wrapper.
+                Let's use a server form for simplicity or just the UI.
+            */}
+                    <form action="/dashboard">
+                        <Input
+                            name="query"
+                            type="search"
+                            placeholder="بحث باسم العميل أو رقم الهاتف..."
+                            className="w-full pr-9 bg-white"
+                            defaultValue={query}
+                        />
+                    </form>
+                </div>
+            </div>
+
+            <OrdersTable orders={orders || []} />
+        </div>
+    );
+}
