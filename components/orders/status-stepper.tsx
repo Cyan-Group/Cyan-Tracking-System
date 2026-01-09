@@ -48,7 +48,6 @@ export function StatusStepper({ currentStatus, className }: StatusStepperProps) 
                 {ORDER_STATUSES.map((status, index) => {
                     const isCompleted = index <= safeIndex;
                     const isCurrent = index === safeIndex;
-                    const isPending = index > safeIndex;
 
                     return (
                         <div key={status.id} className="group flex md:flex-col items-center gap-6 md:gap-4 w-full md:w-auto mb-10 md:mb-0 relative last:mb-0">
