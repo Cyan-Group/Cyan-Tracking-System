@@ -67,7 +67,7 @@ export async function updateSession(request: NextRequest) {
             .eq('id', user.id)
             .single()
 
-        if (profile?.role !== 'developer') {
+        if (profile?.role !== 'developer' && profile?.role !== 'manager') {
             // Redirect to dashboard or 403
             return NextResponse.redirect(new URL('/dashboard', request.url))
         }

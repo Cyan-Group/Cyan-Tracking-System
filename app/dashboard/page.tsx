@@ -38,6 +38,24 @@ export default async function DashboardPage({
         console.log('Dashboard Orders Fetched:', orders?.length);
     }
 
+    // Auth Check: Use the Cookie-based client to identify the user
+    // We cannot use the 'supabase' service client above for auth.getUser() because it has no cookies.
+    const { createClient: createAuthClient } = await import('@/utils/supabase/server');
+    const supabaseAuth = createAuthClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+
+    let userRole = null;
+
+    if (user) {
+        // Use the Service Client (already defined as 'supabase') to fetch the role bypassing RLS
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+        userRole = profile?.role;
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -72,7 +90,7 @@ export default async function DashboardPage({
                 </div>
             </div>
 
-            <OrdersTable orders={orders || []} />
+            <OrdersTable orders={orders || []} userRole={userRole || undefined} />
         </div>
     );
 }
