@@ -22,6 +22,12 @@ export function OrdersTable({ orders: initialOrders, userRole }: { orders: any[]
     const [orders, setOrders] = useState<any[]>(initialOrders);
     const supabase = createClient();
 
+    const [origin, setOrigin] = useState('');
+
+    useEffect(() => {
+        setOrigin(window.location.origin);
+    }, []);
+
     useEffect(() => {
         setOrders(initialOrders);
     }, [initialOrders]);
@@ -72,7 +78,7 @@ export function OrdersTable({ orders: initialOrders, userRole }: { orders: any[]
                     </thead>
                     <tbody className="divide-y">
                         {orders.map((order) => {
-                            const trackingLink = `${window.location.origin}/track/${order.id}`;
+                            const trackingLink = `${origin}/track/${order.id}`;
                             const waLink = `https://wa.me/${order.phone_number}?text=${encodeURIComponent(`مرحباً ${order.customer_name}،\nيمكنك تتبع حالة طلبك لدى Cyan Printing System من خلال الرابط التالي:\n${trackingLink}`)}`;
 
                             return (
