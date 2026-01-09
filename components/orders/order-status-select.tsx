@@ -1,6 +1,6 @@
 'use client';
 
-import { createClient } from '@/utils/supabase/client';
+
 import {
     Select,
     SelectContent,
@@ -17,21 +17,27 @@ import { useRouter } from 'next/navigation';
 export function OrderStatusSelect({ orderId, currentStatus }: { orderId: string, currentStatus: string }) {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const supabase = createClient();
+
 
     const handleValueChange = async (value: string) => {
         setLoading(true);
-        const { error } = await supabase
-            .from('orders')
-            .update({ status: value, updated_at: new Date().toISOString() })
-            .eq('id', orderId);
 
-        if (error) {
-            console.error(error);
-            alert('فشل تحديث الحالة');
-        } else {
-            router.refresh();
+        try {
+            const { updateOrderStatusAction } = await import('@/app/actions/orders');
+            const result = await updateOrderStatusAction(orderId, value);
+
+            if (result.error) {
+                console.error(result.error);
+                alert(`فشل تحديث الحالة: ${result.error}`);
+            } else {
+                // Router refresh is handled in the server action, but doing it here helps instant feedback feeling
+                router.refresh();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('حدث خطأ غير متوقع');
         }
+
         setLoading(false);
     };
 
