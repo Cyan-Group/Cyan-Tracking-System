@@ -4,7 +4,7 @@ import { AuthProvider } from '@/components/providers/auth-provider';
 import { redirect } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/header';
 
-export default async function DevPanelLayout({
+export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
@@ -16,24 +16,21 @@ export default async function DevPanelLayout({
         redirect('/login');
     }
 
-    // Double check role server-side
+    // Check Role
     const supabaseAdmin = createSupabaseClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     const { data: profile } = await supabaseAdmin.from('profiles').select('full_name, role').eq('id', user.id).single();
 
-    if (profile?.role !== 'developer') {
+    if (!profile || (profile.role !== 'developer' && profile.role !== 'manager')) {
         redirect('/dashboard');
     }
 
     return (
         <AuthProvider initialSession={null}>
-            <div className="flex min-h-screen flex-col bg-gray-100/50">
-                <DashboardHeader user={user} profileName={profile?.full_name} userRole={profile?.role} />
-                <div className="bg-red-900 text-white text-center py-1 text-xs font-bold">
-                    DEVELOPER MODE
-                </div>
+            <div className="flex min-h-screen flex-col bg-gray-50">
+                <DashboardHeader user={user} profileName={profile.full_name} userRole={profile.role} />
                 <main className="flex-1 container mx-auto p-4 md:p-8">
                     {children}
                 </main>

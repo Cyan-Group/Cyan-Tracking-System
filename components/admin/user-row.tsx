@@ -10,7 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Save, X } from 'lucide-react';
+import { Loader2, Save, X, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export function UserRow({ profile }: { profile: any }) {
@@ -78,7 +78,37 @@ export function UserRow({ profile }: { profile: any }) {
                         </Button>
                     </div>
                 ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>تعديل</Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>تعديل</Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            title="حذف المستخدم"
+                            onClick={async () => {
+                                if (confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                                    setLoading(true);
+                                    try {
+                                        const { deleteUserAction } = await import('@/app/actions/admin');
+                                        const res = await deleteUserAction(profile.id);
+                                        if (res.error) {
+                                            alert(res.error);
+                                        } else {
+                                            alert('تم حذف المستخدم بنجاح');
+                                            router.refresh();
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                        alert('حدث خطأ أثناء الحذف');
+                                    }
+                                    setLoading(false);
+                                }
+                            }}
+                            disabled={loading}
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </Button>
+                    </div>
                 )}
             </td>
         </tr>

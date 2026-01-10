@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
@@ -72,6 +73,60 @@ export async function inviteUserAction(formData: FormData) {
         }
     }
 
+    revalidatePath('/dev-panel');
+    return { success: true };
+}
+
+export async function deleteUserAction(userId: string) {
+    const cookieStore = cookies();
+
+    // 1. Auth & Role Check
+    const supabaseAuth = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) { return cookieStore.get(name)?.value },
+                set(name: string, value: string, options: any) { },
+                remove(name: string, options: any) { },
+            },
+        }
+    );
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+
+    if (!user) {
+        return { error: 'Unauthorized' };
+    }
+
+    const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || (profile.role !== 'developer' && profile.role !== 'manager')) {
+        return { error: 'Forbidden: Insufficient permissions' };
+    }
+
+    // 2. Delete User
+    // Deleting from auth.users requires Service Role
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+    if (deleteError) {
+        console.error('Delete User Error:', deleteError);
+        return { error: deleteError.message };
+    }
+
+    // Profile should cascade delete if set up correctly, but let's be sure or handle cleanup if needed.
+    // Usually Supabase handles profile cleanup via triggers or foreign keys if configured.
+    // If not, we might need to manually delete from public.profiles but auth deletion usually triggers cascading.
+
+    revalidatePath('/admin/users');
     revalidatePath('/dev-panel');
     return { success: true };
 }
