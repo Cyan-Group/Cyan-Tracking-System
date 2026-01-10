@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { redirect } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/header';
@@ -17,10 +17,7 @@ export default async function DashboardLayout({
     }
 
     // Use Service Role to ensure we can read the profile/role ignoring RLS specific policies
-    const supabaseAdmin = createSupabaseClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabaseAdmin = createAdminClient();
 
     const { data: profile, error: profileError } = await supabaseAdmin
         .from('profiles')
