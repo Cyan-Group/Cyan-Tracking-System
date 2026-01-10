@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { redirect } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/header';
@@ -15,14 +16,26 @@ export default async function DashboardLayout({
         redirect('/login');
     }
 
-    // We can also fetch the profile role here if we want to pass it down or verify it again,
-    // but Middleware already checked basic auth.
+    // Use Service Role to ensure we can read the profile/role ignoring RLS specific policies
+    const supabaseAdmin = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name, role')
+        .eq('id', user.id)
+        .single();
+
+    // Log for debugging
+    console.log('Dashboard Layout Profile Fetch:', { uid: user.id, role: profile?.role });
 
     return (
         <AuthProvider initialUser={user}>
             {/* We can add a common Sidebar or Header here */}
             <div className="flex min-h-screen flex-col bg-gray-100/50">
-                <DashboardHeader />
+                <DashboardHeader user={user} profileName={profile?.full_name} userRole={profile?.role} />
                 <main className="flex-1 container mx-auto p-4 md:p-8">
                     {children}
                 </main>

@@ -7,24 +7,22 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
-export function DashboardHeader() {
-    const { user, signOut } = useAuth();
-    const [profileName, setProfileName] = useState<string>('');
+export function DashboardHeader({ user, profileName, userRole }: { user?: any, profileName?: string, userRole?: string }) {
+    const { signOut } = useAuth();
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            if (!user) return;
-            const supabase = createClient();
-            const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
-            if (data) setProfileName(data.full_name || user.email);
-        }
-        fetchProfile();
-    }, [user]);
+    // Fallback to useAuth user if not passed (though server should pass it)
+    const displayUser = user;
+    const isAdmin = userRole === 'manager' || userRole === 'developer';
 
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
-            <div className="flex items-center gap-2 font-semibold text-lg md:text-xl text-primary">
+            <div className="flex items-center gap-6 font-semibold text-lg md:text-xl text-primary">
                 <Link href="/dashboard">Cyan Tracking</Link>
+                {isAdmin && (
+                    <Link href="/admin/users" className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors">
+                        الموظفين
+                    </Link>
+                )}
             </div>
 
             <div className="flex-1" />
@@ -35,7 +33,7 @@ export function DashboardHeader() {
                     <div className="p-1 bg-muted rounded-full">
                         <UserIcon className="w-5 h-5" />
                     </div>
-                    <span className="hidden md:inline-block">{profileName || 'Loading...'}</span>
+                    <span className="hidden md:inline-block">{profileName || displayUser?.email || 'User'}</span>
                 </div>
 
                 {/* Logout */}
