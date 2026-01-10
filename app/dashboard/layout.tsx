@@ -22,12 +22,18 @@ export default async function DashboardLayout({
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabaseAdmin
         .from('profiles')
         .select('full_name, role')
         .eq('id', user.id)
         .single();
 
+    if (profileError) {
+        console.error('Dashboard Layout Profile Fetch Error:', {
+            uid: user.id,
+            error: profileError.message ?? profileError,
+        });
+    }
     // Log for debugging
     console.log('Dashboard Layout Profile Fetch:', { uid: user.id, role: profile?.role });
 
