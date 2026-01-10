@@ -60,7 +60,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Role based protection
-    if (path.startsWith('/dev-panel')) {
+    if (path.startsWith('/dev-panel') || path.startsWith('/admin')) {
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
