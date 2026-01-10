@@ -78,6 +78,17 @@ export async function inviteUserAction(formData: FormData) {
 }
 
 export async function deleteUserAction(userId: string) {
+    // Validate userId parameter
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+        return { error: 'Invalid user ID: ID cannot be empty' };
+    }
+
+    // Validate UUID format (typical for Supabase)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+        return { error: 'Invalid user ID: ID must be a valid UUID format' };
+    }
+
     const cookieStore = cookies();
 
     // 1. Auth & Role Check
