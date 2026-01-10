@@ -34,8 +34,10 @@ export default async function DashboardLayout({
             error: profileError.message ?? profileError,
         });
     }
-    // Log for debugging
-    console.log('Dashboard Layout Profile Fetch:', { uid: user.id, role: profile?.role });
+    // Optional debug logging, controlled via environment variable
+    if (process.env.NEXT_PUBLIC_ENABLE_DEBUG_LOGS === 'true') {
+        console.log('Dashboard Layout Profile Fetch:', { uid: user.id, role: profile?.role });
+    }
 
     return (
         <AuthProvider initialUser={user}>
