@@ -12,12 +12,22 @@ export default async function EmployeesPage() {
         { auth: { persistSession: false } }
     );
 
-    const { data: profiles } = await supabase
+    const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .order('role')
         .order('created_at', { ascending: false });
 
+    if (error) {
+        console.error('Failed to load profiles:', error);
+        return (
+            <div className="space-y-6">
+                <div className="rounded-xl border bg-white shadow-sm p-8 text-center text-red-600">
+                    حدث خطأ أثناء تحميل بيانات الموظفين. يرجى المحاولة مرة أخرى لاحقاً.
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
