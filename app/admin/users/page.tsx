@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { InviteUserDialog } from '@/components/admin/invite-user-dialog';
 import { UserRow } from '@/components/admin/user-row';
 import { Users } from 'lucide-react';
@@ -6,11 +6,7 @@ import { Users } from 'lucide-react';
 export default async function EmployeesPage() {
     // Use Service Key to bypass potential RLS issues just in case, though managers should have read access.
     // Using Service Key ensures we see ALL users even if RLS is tricky.
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        { auth: { persistSession: false } }
-    );
+    const supabase = createAdminClient();
 
     const { data: profiles, error } = await supabase
         .from('profiles')

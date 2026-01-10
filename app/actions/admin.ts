@@ -1,7 +1,7 @@
 'use server';
 
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
@@ -41,17 +41,7 @@ export async function inviteUserAction(formData: FormData) {
     // Ideally yes, but let's assume middleware handled it. 
     // But for "Invite" which is powerful, we specifically need the Service Key.
 
-    const supabaseAdmin = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-            cookies: {
-                get(name: string) { return cookieStore.get(name)?.value },
-                set(name: string, value: string, options: any) { },
-                remove(name: string, options: any) { },
-            },
-        }
-    );
+    const supabaseAdmin = createAdminClient();
 
     const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
@@ -98,10 +88,7 @@ export async function deleteUserAction(userId: string) {
         return { error: 'Unauthorized' };
     }
 
-    const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabaseAdmin = createAdminClient();
 
     const { data: profile } = await supabaseAdmin
         .from('profiles')
