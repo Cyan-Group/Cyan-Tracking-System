@@ -19,7 +19,11 @@ export function DashboardHeader({ user, profileName, userRole }: { user?: any, p
             <div className="flex items-center gap-6 font-semibold text-lg md:text-xl text-primary">
                 <Link href="/dashboard">Cyan Tracking</Link>
                 {isAdmin && (
-                    <Link href="/admin/users" className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors">
+                    <Link
+                        href="/admin/users"
+                        className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors"
+                        aria-label="Employees"
+                    >
                         الموظفين
                     </Link>
                 )}
