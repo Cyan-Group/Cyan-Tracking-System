@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createAdminClient } from './admin'
 
 export async function updateSession(request: NextRequest) {
     let response = NextResponse.next({
@@ -61,7 +62,9 @@ export async function updateSession(request: NextRequest) {
 
     // Role based protection
     if (path.startsWith('/dev-panel') || path.startsWith('/admin')) {
-        const { data: profile } = await supabase
+        // Use Admin Client to bypass RLS policies for role check
+        const supabaseAdmin = createAdminClient();
+        const { data: profile } = await supabaseAdmin
             .from('profiles')
             .select('role')
             .eq('id', user.id)
