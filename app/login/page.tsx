@@ -1,6 +1,7 @@
 import { login, signup } from './actions'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { SubmitButton } from '@/components/auth/submit-button'
 
 export default function LoginPage({ searchParams }: { searchParams: { message: string } }) {
     return (
@@ -44,9 +45,9 @@ export default function LoginPage({ searchParams }: { searchParams: { message: s
                     </div>
 
                     <div className="flex flex-col gap-4 pt-4">
-                        <Button formAction={login} className="w-full">
+                        <SubmitButton formAction={login} className="w-full">
                             دخول
-                        </Button>
+                        </SubmitButton>
                         {/* 
                 <Button formAction={signup} variant="outline" className="w-full">
                     إنشاء حساب جديد
