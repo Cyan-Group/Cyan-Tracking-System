@@ -13,7 +13,7 @@ export async function inviteUserAction(formData: FormData) {
         return { error: 'Email is required' };
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     // Check if the requester is a developer first
     const supabaseAuth = createServerClient(
@@ -21,9 +21,8 @@ export async function inviteUserAction(formData: FormData) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) { return cookieStore.get(name)?.value },
-                set(name: string, value: string, options: any) { },
-                remove(name: string, options: any) { },
+                getAll() { return cookieStore.getAll() },
+                setAll(cookiesToSet) { },
             },
         }
     );
@@ -79,7 +78,7 @@ export async function deleteUserAction(userId: string) {
         return { error: 'Invalid user ID: ID must be a valid UUID format' };
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     // 1. Auth & Role Check
     const supabaseAuth = createServerClient(
@@ -87,9 +86,8 @@ export async function deleteUserAction(userId: string) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) { return cookieStore.get(name)?.value },
-                set(name: string, value: string, options: any) { },
-                remove(name: string, options: any) { },
+                getAll() { return cookieStore.getAll() },
+                setAll(cookiesToSet) { },
             },
         }
     );

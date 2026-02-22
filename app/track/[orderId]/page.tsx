@@ -22,7 +22,9 @@ function DetailCard({ title, value, icon, className, delay = 0 }: { title: strin
     )
 }
 
-export default async function TrackOrderPage({ params }: { params: { orderId: string } }) {
+export default async function TrackOrderPage({ params }: { params: Promise<{ orderId: string }> }) {
+    const { orderId } = await params;
+
     // Use Service Role to allow fetching order without RLS (public specific access)
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +33,7 @@ export default async function TrackOrderPage({ params }: { params: { orderId: st
 
     // Basic validation for UUID
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(params.orderId)) {
+    if (!uuidRegex.test(orderId)) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
                 <div className="text-center space-y-4 animate-in fade-in zoom-in duration-500">
@@ -48,7 +50,7 @@ export default async function TrackOrderPage({ params }: { params: { orderId: st
     const { data: order, error } = await supabase
         .from('orders')
         .select('*')
-        .eq('id', params.orderId)
+        .eq('id', orderId)
         .single();
 
     if (error || !order) {

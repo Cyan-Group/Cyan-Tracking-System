@@ -1,8 +1,10 @@
 import { login, signup } from './actions'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { SubmitButton } from '@/components/auth/submit-button'
 
-export default function LoginPage({ searchParams }: { searchParams: { message: string } }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ message: string }> }) {
+    const { message } = await searchParams;
     return (
         <div className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-50">
             <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-xl shadow-lg border">
@@ -44,9 +46,9 @@ export default function LoginPage({ searchParams }: { searchParams: { message: s
                     </div>
 
                     <div className="flex flex-col gap-4 pt-4">
-                        <Button formAction={login} className="w-full">
+                        <SubmitButton formAction={login} className="w-full">
                             دخول
-                        </Button>
+                        </SubmitButton>
                         {/* 
                 <Button formAction={signup} variant="outline" className="w-full">
                     إنشاء حساب جديد
@@ -54,9 +56,9 @@ export default function LoginPage({ searchParams }: { searchParams: { message: s
                 */}
                     </div>
 
-                    {searchParams?.message && (
+                    {message && (
                         <p className="mt-4 p-4 bg-red-50 text-red-600 text-center rounded-md text-sm">
-                            {searchParams.message}
+                            {message}
                         </p>
                     )}
                 </form>

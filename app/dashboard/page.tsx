@@ -8,9 +8,10 @@ import { Search } from 'lucide-react';
 export default async function DashboardPage({
     searchParams,
 }: {
-    searchParams?: { query?: string };
+    searchParams?: Promise<{ query?: string }>;
 }) {
-    const query = searchParams?.query || '';
+    const resolvedParams = await searchParams;
+    const query = resolvedParams?.query || '';
 
     // Use direct Supabase Client with Service Key to ensure ADMIN access (Bypass RLS)
     const supabase = createClient(
@@ -41,7 +42,7 @@ export default async function DashboardPage({
     // Auth Check: Use the Cookie-based client to identify the user
     // We cannot use the 'supabase' service client above for auth.getUser() because it has no cookies.
     const { createClient: createAuthClient } = await import('@/utils/supabase/server');
-    const supabaseAuth = createAuthClient();
+    const supabaseAuth = await createAuthClient();
     const { data: { user } } = await supabaseAuth.auth.getUser();
 
     let userRole = null;
