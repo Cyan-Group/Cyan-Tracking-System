@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
 export async function login(formData: FormData) {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Type-casting here for simplicity, valid in TS with 'as string'
     const email = formData.get('email') as string
@@ -26,7 +26,7 @@ export async function login(formData: FormData) {
 
 export async function signup(formData: FormData) {
     // Optional: If you want to enable self-signup
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string

@@ -6,9 +6,8 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
 export async function createOrderAction(formData: FormData) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
-    // 1. Create a "Service" client to bypass RLS for insertion
     // 1. Create a "Service" client to bypass RLS for insertion
     // We use createClient from @supabase/supabase-js to ensure NO cookies/session are used,
     // guaranteeing we act as the Service Role (Super Admin).
@@ -18,21 +17,16 @@ export async function createOrderAction(formData: FormData) {
     );
 
     // 2. Get current user (we still need to know WHO is creating it)
-    // We can trust the session or pass the ID. Best to verify session.
-    // However, to be safe, let's trust the Caller (Client) has verified auth. 
-    // Ideally we verify session with the normal client first.
-
     // Let's get the user from the "Normal" client first to handle Auth
     const supabaseAuth = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) { return cookieStore.get(name)?.value },
-                set(name: string, value: string, options: any) {
+                getAll() { return cookieStore.getAll() },
+                setAll(cookiesToSet) {
                     // Server Actions can't set cookies easily, but we just need to READ session here
                 },
-                remove(name: string, options: any) { },
             },
         }
     );
@@ -89,7 +83,7 @@ export async function updateOrderStatusAction(orderId: string, newStatus: string
 }
 
 export async function deleteOrderAction(orderId: string) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     // Auth Check
     const supabaseAuth = createServerClient(
@@ -97,9 +91,8 @@ export async function deleteOrderAction(orderId: string) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) { return cookieStore.get(name)?.value },
-                set(name: string, value: string, options: any) { },
-                remove(name: string, options: any) { },
+                getAll() { return cookieStore.getAll() },
+                setAll(cookiesToSet) { },
             },
         }
     );
