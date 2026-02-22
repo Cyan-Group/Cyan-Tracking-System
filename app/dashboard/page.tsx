@@ -28,7 +28,7 @@ export default async function DashboardPage({
 
     // If search exists
     if (query) {
-        dbQuery = dbQuery.or(`customer_name.ilike.%${query}%,phone_number.ilike.%${query}%,id.eq.${query}`);
+        dbQuery = dbQuery.or(`customer_name.ilike.%${query}%,phone_number.ilike.%${query}%,short_id.ilike.%${query}%`);
     }
 
     const { data: orders, error } = await dbQuery;

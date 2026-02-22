@@ -78,13 +78,13 @@ export function OrdersTable({ orders: initialOrders, userRole }: { orders: any[]
                     </thead>
                     <tbody className="divide-y">
                         {orders.map((order) => {
-                            const trackingLink = `${origin}/track/${order.id}`;
+                            const trackingLink = `${origin}/track/${order.short_id || order.id}`;
                             const waLink = `https://wa.me/${order.phone_number}?text=${encodeURIComponent(`مرحباً ${order.customer_name}،\nيمكنك تتبع حالة طلبك لدى Cyan Printing System من خلال الرابط التالي:\n${trackingLink}`)}`;
 
                             return (
                                 <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="p-4 font-mono text-xs text-muted-foreground">
-                                        {order.id.slice(0, 8)}...
+                                        {order.short_id || order.id.slice(0, 8)}
                                     </td>
                                     <td className="p-4 font-medium">
                                         <div>{order.customer_name}</div>
@@ -110,7 +110,7 @@ export function OrdersTable({ orders: initialOrders, userRole }: { orders: any[]
                                                 </a>
                                             </Button>
                                             <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild title="فتح صفحة التتبع">
-                                                <Link href={`/track/${order.id}`} target="_blank">
+                                                <Link href={`/track/${order.short_id || order.id}`} target="_blank">
                                                     <ExternalLink className="w-4 h-4" />
                                                 </Link>
                                             </Button>

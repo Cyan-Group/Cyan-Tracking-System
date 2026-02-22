@@ -31,9 +31,9 @@ export default async function TrackOrderPage({ params }: { params: Promise<{ ord
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Basic validation for UUID
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(orderId)) {
+    // Validate: short_id is alphanumeric, max 10 chars
+    const shortIdRegex = /^[A-Z0-9]{1,10}$/i;
+    if (!shortIdRegex.test(orderId)) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
                 <div className="text-center space-y-4 animate-in fade-in zoom-in duration-500">
@@ -47,10 +47,11 @@ export default async function TrackOrderPage({ params }: { params: Promise<{ ord
         )
     }
 
+    // Look up by short_id
     const { data: order, error } = await supabase
         .from('orders')
         .select('*')
-        .eq('id', orderId)
+        .eq('short_id', orderId.toUpperCase())
         .single();
 
     if (error || !order) {
@@ -90,7 +91,7 @@ export default async function TrackOrderPage({ params }: { params: Promise<{ ord
                         تتبع حالة الطلب
                     </h1>
                     <p className="text-slate-500 font-medium text-lg flex items-center justify-center gap-2" dir="rtl">
-                        رقم الطلب: <span className="font-mono bg-white border border-slate-200 px-3 py-1 rounded-md text-slate-700 text-base">{order.id}</span>
+                        رقم الطلب: <span className="font-mono bg-white border border-slate-200 px-3 py-1 rounded-md text-slate-700 text-base">{order.short_id}</span>
                     </p>
                 </div>
 

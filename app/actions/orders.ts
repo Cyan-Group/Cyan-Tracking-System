@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { generateShortId } from '@/utils/short-id';
 
 export async function createOrderAction(formData: FormData) {
     const cookieStore = await cookies();
@@ -41,17 +42,36 @@ export async function createOrderAction(formData: FormData) {
     const details = formData.get('details') as string;
 
     // 3. Insert using Service Client (Bypass RLS)
-    const { error } = await supabaseService.from('orders').insert({
-        customer_name,
-        phone_number,
-        details,
-        status: 'designed',
-        created_by: user.id
-    });
+    // Generate a unique short_id with retry for collisions
+    let short_id = generateShortId();
+    let retries = 3;
+    let insertError: any = null;
 
-    if (error) {
-        console.error('Create Order Error:', error);
-        return { error: error.message };
+    while (retries > 0) {
+        const { error } = await supabaseService.from('orders').insert({
+            customer_name,
+            phone_number,
+            details,
+            status: 'designed',
+            created_by: user.id,
+            short_id,
+        });
+
+        if (error) {
+            // If collision on short_id, regenerate and retry
+            if (error.code === '23505' && error.message.includes('short_id')) {
+                short_id = generateShortId();
+                retries--;
+                continue;
+            }
+            insertError = error;
+        }
+        break;
+    }
+
+    if (insertError) {
+        console.error('Create Order Error:', insertError);
+        return { error: insertError.message };
     }
 
     revalidatePath('/dashboard');
