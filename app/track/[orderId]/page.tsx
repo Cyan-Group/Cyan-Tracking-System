@@ -1,10 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { StatusStepper } from '@/components/orders/status-stepper';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Clock, Phone, User, Calendar } from 'lucide-react';
-import { notFound } from 'next/navigation';
+import { Package, Clock, User } from 'lucide-react';
 
-// Mock Card since we can't install shadcn/ui cli yet
 function DetailCard({ title, value, icon, className, delay = 0 }: { title: string, value: string, icon: any, className?: string, delay?: number }) {
     return (
         <div

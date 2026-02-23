@@ -1,16 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
-import { Button } from '@/components/ui/button';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { UserRow } from '@/components/admin/user-row';
 import { InviteUserDialog } from '@/components/admin/invite-user-dialog';
 
 export default async function DevPanelPage() {
-
-    // Use Service Key to bypass RLS recursion issues
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        { auth: { persistSession: false } }
-    );
+    const supabase = createAdminClient();
 
     const { data: profiles } = await supabase
         .from('profiles')

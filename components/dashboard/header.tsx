@@ -4,13 +4,10 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { Button } from '@/components/ui/button';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 
 export function DashboardHeader({ user, profileName, userRole }: { user?: any, profileName?: string, userRole?: string }) {
     const { signOut } = useAuth();
 
-    // Fallback to useAuth user if not passed (though server should pass it)
     const displayUser = user;
     const isAdmin = userRole === 'manager' || userRole === 'developer';
 

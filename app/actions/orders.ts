@@ -9,25 +9,18 @@ import { generateShortId } from '@/utils/short-id';
 export async function createOrderAction(formData: FormData) {
     const cookieStore = await cookies();
 
-    // 1. Create a "Service" client to bypass RLS for insertion
-    // We use createClient from @supabase/supabase-js to ensure NO cookies/session are used,
-    // guaranteeing we act as the Service Role (Super Admin).
     const supabaseService = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // 2. Get current user (we still need to know WHO is creating it)
-    // Let's get the user from the "Normal" client first to handle Auth
     const supabaseAuth = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
                 getAll() { return cookieStore.getAll() },
-                setAll(cookiesToSet) {
-                    // Server Actions can't set cookies easily, but we just need to READ session here
-                },
+                setAll(cookiesToSet) { },
             },
         }
     );
@@ -41,7 +34,6 @@ export async function createOrderAction(formData: FormData) {
     const phone_number = formData.get('phone_number') as string;
     const details = formData.get('details') as string;
 
-    // 3. Insert using Service Client (Bypass RLS)
     // Generate a unique short_id with retry for collisions
     let short_id = generateShortId();
     let retries = 3;
@@ -58,7 +50,6 @@ export async function createOrderAction(formData: FormData) {
         });
 
         if (error) {
-            // If collision on short_id, regenerate and retry
             if (error.code === '23505' && error.message.includes('short_id')) {
                 short_id = generateShortId();
                 retries--;
@@ -84,9 +75,6 @@ export async function updateOrderStatusAction(orderId: string, newStatus: string
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // We update without checking session to bypass RLS recursion.
-    // In a real production app, we would verify the session role here too.
-
     const { error } = await supabaseService
         .from('orders')
         .update({ status: newStatus, updated_at: new Date().toISOString() })
@@ -105,7 +93,6 @@ export async function updateOrderStatusAction(orderId: string, newStatus: string
 export async function deleteOrderAction(orderId: string) {
     const cookieStore = await cookies();
 
-    // Auth Check
     const supabaseAuth = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -122,8 +109,6 @@ export async function deleteOrderAction(orderId: string) {
         return { error: 'Unauthorized' };
     }
 
-    // Role check - We need to be sure. 
-    // We can use the service client to check the profile role
     const supabaseService = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!

@@ -3,7 +3,7 @@
 import { OrderStatusSelect } from './order-status-select';
 import { DeleteOrderDialog } from './delete-order-dialog';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, ExternalLink, MoreHorizontal, Link as LinkIcon } from 'lucide-react';
+import { MessageCircle, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';

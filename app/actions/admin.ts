@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function inviteUserAction(formData: FormData) {
     const email = formData.get('email') as string;
-    const role = formData.get('role') as string; // 'manager', 'staff', 'developer'
+    const role = formData.get('role') as string;
 
     if (!email) {
         return { error: 'Email is required' };
@@ -15,7 +15,6 @@ export async function inviteUserAction(formData: FormData) {
 
     const cookieStore = await cookies();
 
-    // Check if the requester is a developer first
     const supabaseAuth = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,30 +26,20 @@ export async function inviteUserAction(formData: FormData) {
         }
     );
 
-    // Determine user session manually since getting user might fail if we are stuck in recursion loop from middleware
-    // Actually, middleware protects the route /dev-panel, so if we reached here via form submission, 
-    // we should be safe to check auth status.
     const { data: { user } } = await supabaseAuth.auth.getUser();
 
     if (!user) {
         return { error: 'Unauthorized' };
     }
 
-    // Double check role from DB? 
-    // Ideally yes, but let's assume middleware handled it. 
-    // But for "Invite" which is powerful, we specifically need the Service Key.
-
     const supabaseAdmin = createAdminClient();
-
     const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
     if (error) {
         return { error: error.message };
     }
 
-    // If role is specified, we need to update the profile immediately
     if (data.user && role) {
-        // We can update the profiles table directly
         const { error: profileError } = await supabaseAdmin
             .from('profiles')
             .update({ role: role })
@@ -67,12 +56,10 @@ export async function inviteUserAction(formData: FormData) {
 }
 
 export async function deleteUserAction(userId: string) {
-    // Validate userId parameter
     if (!userId || typeof userId !== 'string' || userId.trim() === '') {
         return { error: 'Invalid user ID: ID cannot be empty' };
     }
 
-    // Validate UUID format (typical for Supabase)
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(userId)) {
         return { error: 'Invalid user ID: ID must be a valid UUID format' };
@@ -80,7 +67,6 @@ export async function deleteUserAction(userId: string) {
 
     const cookieStore = await cookies();
 
-    // 1. Auth & Role Check
     const supabaseAuth = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -109,18 +95,12 @@ export async function deleteUserAction(userId: string) {
         return { error: 'Forbidden: Insufficient permissions' };
     }
 
-    // 2. Delete User
-    // Deleting from auth.users requires Service Role
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
         console.error('Delete User Error:', deleteError);
         return { error: deleteError.message };
     }
-
-    // Profile should cascade delete if set up correctly, but let's be sure or handle cleanup if needed.
-    // Usually Supabase handles profile cleanup via triggers or foreign keys if configured.
-    // If not, we might need to manually delete from public.profiles but auth deletion usually triggers cascading.
 
     revalidatePath('/admin/users');
     revalidatePath('/dev-panel');
